@@ -7,15 +7,26 @@ Promise.all([
   faceapi.nets.faceExpressionNet.loadFromUri('/models')
 ]).then(startVideo)
 
-function startVideo() {
-  navigator.getUserMedia(
-    { video: {} },
+let cameraHeight = 480;
+let cameraWidth = 640;
+
+async function startVideo()  {
+  display = await navigator.getUserMedia(
+    { video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      } 
+    },
     stream => video.srcObject = stream,
     err => console.error(err)
   )
+  let settings = display.getVideoTracks()[0].getSettings();
+  cameraWidth = settings.width;
+  cameraHeight = settings.height;
 }
 
 let interPupilDistance = 61; // mm
+let fov = 60;
 
 
 video.addEventListener('play', () => {
@@ -45,12 +56,12 @@ video.addEventListener('play', () => {
     eyeDistance = angleToDistance(angleDistance)
     console.log(`Distancia al ojo: ${eyeDistance}`)
     ctx.beginPath();
-    ctx.moveTo(320, 0);
-    ctx.lineTo(320, 480);
+    ctx.moveTo(cameraWidth/2, 0);
+    ctx.lineTo(cameraWidth/2, cameraHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, 240);
-    ctx.lineTo(640, 240);
+    ctx.moveTo(0, cameraHeight/2);
+    ctx.lineTo(cameraWidth, cameraHeight/2);
     ctx.stroke();
 
     // ctx.beginPath();
@@ -73,9 +84,11 @@ function getPupilPixelPosition(eye) {
 }
 
 function pixelPositionToAnglePosition(pixelPos) {
+  let horizontalAngle = cameraWidth * fov / Math.sqrt(Math.pow(cameraWidth, 2) + Math.pow(cameraHeight, 2))
+  let verticalAngle = cameraHeight * fov / Math.sqrt(Math.pow(cameraWidth, 2) + Math.pow(cameraHeight, 2))
   return {
-    x: (pixelPos.x - 320) * 0.05625,
-    y: (pixelPos.y - 240) * 0.075 
+    x: (pixelPos.x - cameraWidth) * horizontalAngle / cameraWidth,
+    y: (pixelPos.y - cameraHeight) * verticalAngle /cameraHeight
   }
 }
 
