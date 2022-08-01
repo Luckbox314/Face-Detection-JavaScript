@@ -46,15 +46,15 @@ video.addEventListener('play', () => {
     rightEye = resizedDetections[0].landmarks.getRightEye()
     leftPupil = getPupilPixelPosition(leftEye)
     rightPupil = getPupilPixelPosition(rightEye)
-    console.log(`Posición de pupila derecha: ${rightPupil.x}, ${rightPupil.y}`)
+    // console.log(`Posición de pupila derecha: ${rightPupil.x}, ${rightPupil.y}`)
     leftAngle = pixelPositionToAnglePosition(leftPupil)
     rightAngle = pixelPositionToAnglePosition(rightPupil)
     console.log(`Posición en angulos de pupila derecha: ${rightAngle.x}, ${rightAngle.y}`)
     angleDistance = distance(leftAngle, rightAngle)
-    console.log(angleDistance)
-    console.log(`Angulo entre ojos: ${angleDistance}`)
+    // console.log(angleDistance)
+    // console.log(`Angulo entre ojos: ${angleDistance}`)
     eyeDistance = angleToDistance(angleDistance)
-    console.log(`Distancia al ojo: ${eyeDistance}`)
+    // console.log(`Distancia al ojo: ${eyeDistance}`)
     ctx.beginPath();
     ctx.moveTo(cameraWidth/2, 0);
     ctx.lineTo(cameraWidth/2, cameraHeight);
@@ -63,12 +63,14 @@ video.addEventListener('play', () => {
     ctx.moveTo(0, cameraHeight/2);
     ctx.lineTo(cameraWidth, cameraHeight/2);
     ctx.stroke();
+    posRightEye = getEyePupilPosition(eyeDistance, rightAngle.y, rightAngle.x)
+    posLeftEye = getEyePupilPosition(eyeDistance, leftAngle.y, leftAngle.x)
+    console.log(`Posición en espacio de pupila derecha: ${posRightEye.x}, ${posRightEye.y}, ${posRightEye.z}`)
 
-    // ctx.beginPath();
-    // ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, 5, 0, 2 * Math.PI);
-    // ctx.arc((leftEye[0]._x + leftEye[3]._x)/2 , (leftEye[0]._y + leftEye[3]._y)/2, 5, 0, 2 * Math.PI);
-    // ctx.strokeStyle = 'blue';
-    // ctx.stroke();
+    ctx.beginPath();
+    ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, 5, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'red';
+    ctx.stroke();
 
   
     
@@ -87,8 +89,8 @@ function pixelPositionToAnglePosition(pixelPos) {
   let horizontalAngle = cameraWidth * fov / Math.sqrt(Math.pow(cameraWidth, 2) + Math.pow(cameraHeight, 2))
   let verticalAngle = cameraHeight * fov / Math.sqrt(Math.pow(cameraWidth, 2) + Math.pow(cameraHeight, 2))
   return {
-    x: (pixelPos.x - cameraWidth) * horizontalAngle / cameraWidth,
-    y: (pixelPos.y - cameraHeight) * verticalAngle /cameraHeight
+    x: (pixelPos.x - cameraWidth/2) * horizontalAngle / cameraWidth,
+    y: (pixelPos.y - cameraHeight/2) * verticalAngle /cameraHeight
   }
 }
 
@@ -102,4 +104,17 @@ function angleToDistance(angle){
 
 function getTanFromDegrees(degrees) {
   return Math.tan(degrees * Math.PI / 180);
+}
+
+function getEyePupilPosition(distance, altitude, azimuth) {
+  let radAltitude = altitude * Math.PI / 180
+  let radAzimuth = azimuth * Math.PI / 180
+  let z = distance * Math.cos(radAltitude) * Math.cos(radAzimuth)
+  let x = distance * Math.cos(radAltitude) * Math.sin(radAzimuth)
+  let y = distance * Math.sin(radAltitude)
+  return {
+    x: x,
+    y: y,
+    z: z
+  }
 }
