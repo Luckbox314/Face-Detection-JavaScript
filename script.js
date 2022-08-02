@@ -14,7 +14,7 @@ async function startVideo()  {
   display = await navigator.getUserMedia(
     { video: {
         width: { ideal: 640 },
-        height: { ideal: 480 }
+        height: { ideal: 480 },
       } 
     },
     stream => video.srcObject = stream,
@@ -26,8 +26,8 @@ async function startVideo()  {
 }
 
 let interPupilDistance = 61; // mm
-let fov = 133.01;
-let dpi = 96;
+let fov = 60;
+let dpi = 112;
 let cube = {
   vertex : [
     {x: -1, y: -1, z: -1},
@@ -40,8 +40,8 @@ let cube = {
     {x: 1, y: 1, z: 1}
   ]
 }
-scaleCube(cube, 10)
-moveCube(cube, 40, 20, -20)
+scaleCube(cube, 30 )
+moveCube(cube, 0, 135, 15)
 
 
 
@@ -196,16 +196,17 @@ function drawCube(cube, canvas, cameraPos, windowPlane) {
   }
 }
 
+yOffset = -135
+
 function drawFace(face, canvas, windowPlane, cameraPos, color) {
   let ctx = canvas.getContext("2d");
   let faceVertices = face.map((vertex) => pointProjection(vertex, windowPlane, cameraPos));
   
   ctx.fillStyle = color;
   ctx.beginPath();
-  //console.log(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937)
-  ctx.moveTo(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937);
+  ctx.moveTo(faceVertices[0].x * dpi * 0.03937 + cameraWidth/2, (faceVertices[0].y + yOffset)  * dpi * 0.03937 + cameraHeight/2);
   for (let i = 1; i < faceVertices.length; i++) {
-    ctx.lineTo(faceVertices[i].x * dpi * 0.03937, faceVertices[i].y * dpi * 0.03937);
+    ctx.lineTo(faceVertices[i].x * dpi * 0.03937 + cameraWidth/2, (faceVertices[i].y + yOffset) * dpi * 0.03937 + cameraHeight/2);
   }
   ctx.closePath();
   ctx.fill();
@@ -228,9 +229,9 @@ function scaleCube(cube, scale) {
 }
 
 function pointProjection(point, plane, cameraPos) {
-  lambda = point.z / (point.z - cameraPos.z)
-  x = (point.x - cameraPos.x * lambda) + point.x
-  y = (point.y - cameraPos.y * lambda) + point.y
+  lambda = -point.z / (point.z - cameraPos.z)
+  x = -(((point.x - cameraPos.x) * lambda) + point.x)
+  y = (((point.y - cameraPos.y) * lambda) + point.y)
   return {x: x, y: y}
 }
 
