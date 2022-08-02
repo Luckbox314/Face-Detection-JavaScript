@@ -26,7 +26,7 @@ async function startVideo()  {
 }
 
 let interPupilDistance = 61; // mm
-let fov = 60;
+let fov = 133.01;
 let dpi = 96;
 let cube = {
   vertex : [
@@ -140,21 +140,60 @@ function getEyePupilPosition(distance, altitude, azimuth) {
   }
 }
 
+function dotProduct3D(vector1, vector2) {
+  return vector1[0] * vector2[0] + vector1[1] * vector2[1] + vector1[2] * vector2[2]
+}
+
+function crossProduct3D(vector1, vector2) {
+  return [
+    vector1[1] * vector2[2] - vector1[2] * vector2[1],
+    vector1[2] * vector2[0] - vector1[0] * vector2[2],
+    vector1[0] * vector2[1] - vector1[1] * vector2[0]
+  ]
+}
+
+function getUnitVector(vector) {
+  let magnitude = Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2))
+  return [vector[0] / magnitude, vector[1] / magnitude, vector[2] / magnitude]
+}
+
+function getFaceNormal(face) {
+  let U = [face[3].x - face[1].x, face[3].y - face[1].y, face[3].z - face[1].z]
+  let W = [face[3].x - face[2].x, face[3].y - face[2].y, face[3].z - face[2].z]
+  let V = crossProduct3D(U, W)
+  return getUnitVector(V)
+}
+
+
 function drawCube(cube, canvas, cameraPos, windowPlane) {
-  face1 = [cube.vertex[0], cube.vertex[1], cube.vertex[3], cube.vertex[2]]
+  // obs: respetar la regla de la mano derecha al definir las caras
+  face1 = [cube.vertex[0], cube.vertex[2], cube.vertex[3], cube.vertex[1]]
   face2 = [cube.vertex[4], cube.vertex[5], cube.vertex[7], cube.vertex[6]]
   face3 = [cube.vertex[0], cube.vertex[1], cube.vertex[5], cube.vertex[4]]
-  face4 = [cube.vertex[2], cube.vertex[3], cube.vertex[7], cube.vertex[6]]
-  face5 = [cube.vertex[1], cube.vertex[5], cube.vertex[7], cube.vertex[3]]
-  face6 = [cube.vertex[0], cube.vertex[4], cube.vertex[6], cube.vertex[2]]
+  face4 = [cube.vertex[2], cube.vertex[6], cube.vertex[7], cube.vertex[3]]
+  face5 = [cube.vertex[1], cube.vertex[3], cube.vertex[7], cube.vertex[5]]
+  face6 = [cube.vertex[0], cube.vertex[4], cube.vertex[6], cube.vertex[2]]  
   faces = [face1, face2, face3, face4, face5, face6]
-  faces = faces.sort((a) =>  distanceToFace(a, cameraPos));
+
+  let viewVector = [cameraPos.x, cameraPos.y, -1 * cameraPos.z]
+  let faceNormals = []
+  for (let i = 0; i < faces.length; i++) {
+    let normal = getFaceNormal(faces[i])
+    faceNormals.push(normal)
+  }
+  let faceDots = []
+  for (let i = 0; i < faces.length; i++) {
+    let dot = dotProduct3D(faceNormals[i], viewVector)
+    faceDots.push(dot)
+  }
+  console.log(faceDots)
+  
   colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
   for (let i = 0; i < faces.length; i++) {
-    drawFace(faces[i], canvas, windowPlane, cameraPos, colors[i])
+    if (faceDots[i] < 0) {
+      drawFace(faces[i], canvas, windowPlane, cameraPos, colors[i])
+    }
   }
-
-  
 }
 
 function drawFace(face, canvas, windowPlane, cameraPos, color) {
@@ -163,7 +202,7 @@ function drawFace(face, canvas, windowPlane, cameraPos, color) {
   
   ctx.fillStyle = color;
   ctx.beginPath();
-  console.log(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937)
+  //console.log(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937)
   ctx.moveTo(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937);
   for (let i = 1; i < faceVertices.length; i++) {
     ctx.lineTo(faceVertices[i].x * dpi * 0.03937, faceVertices[i].y * dpi * 0.03937);
