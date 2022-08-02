@@ -190,7 +190,7 @@ function drawCube(cube, canvas, cameraPos, windowPlane) {
   
   colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
   for (let i = 0; i < faces.length; i++) {
-    if (faceDots[i] < 0) {
+    if (faceDots[i] > 0) {
       drawFace(faces[i], canvas, windowPlane, cameraPos, colors[i])
     }
   }
