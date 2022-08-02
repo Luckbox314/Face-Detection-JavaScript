@@ -44,6 +44,7 @@ scaleCube(cube, 10)
 moveCube(cube, 40, 20, -20)
 
 
+
 video.addEventListener('play', () => {
   const canvas = faceapi.createCanvasFromMedia(video)
   var ctx = canvas.getContext("2d");
@@ -83,7 +84,8 @@ video.addEventListener('play', () => {
     console.log(`Posición en espacio de pupila derecha: ${posRightEye.x}, ${posRightEye.y}, ${posRightEye.z}`)
 
     ctx.beginPath();
-    ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, 5, 0, 2 * Math.PI);
+    ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, (Math.abs(rightEye[0]._x - rightEye[3]._x))/2, 0, 2 * Math.PI);
+    ctx.lineWidth = (Math.abs(rightEye[0]._x - rightEye[3]._x))*0.1;
     ctx.strokeStyle = 'red';
     ctx.stroke();
     drawCube(cube, canvas, posRightEye, null)
