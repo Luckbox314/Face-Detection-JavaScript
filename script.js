@@ -48,9 +48,9 @@ let leftBuff
 let rightBuff
 
 video.addEventListener('play', () => {
-  const canvas = faceapi.createCanvasFromMedia(video)
+  const canvas = document.getElementById('canvas')
+  
   var ctx = canvas.getContext("2d");
-  document.body.append(canvas)
   const displaySize = { width: video.width, height: video.height }
   faceapi.matchDimensions(canvas, displaySize)
   setInterval(async () => {
@@ -76,7 +76,7 @@ video.addEventListener('play', () => {
     // console.log(`Posición de pupila derecha: ${rightPupil.x}, ${rightPupil.y}`)
     leftAngle = pixelPositionToAnglePosition(leftPupil)
     rightAngle = pixelPositionToAnglePosition(rightPupil)
-    console.log(`Posición en angulos de pupila derecha: ${rightAngle.x}, ${rightAngle.y}`)
+    // console.log(`Posición en angulos de pupila derecha: ${rightAngle.x}, ${rightAngle.y}`)
     angleDistance = distance(leftAngle, rightAngle)
     // console.log(angleDistance)
     // console.log(`Angulo entre ojos: ${angleDistance}`)
@@ -92,13 +92,16 @@ video.addEventListener('play', () => {
     ctx.stroke();
     posRightEye = getEyePupilPosition(eyeDistance, rightAngle.y, rightAngle.x)
     posLeftEye = getEyePupilPosition(eyeDistance, leftAngle.y, leftAngle.x)
-    console.log(`Posición en espacio de pupila derecha: ${posRightEye.x}, ${posRightEye.y}, ${posRightEye.z}`)
+    // console.log(`Posición en espacio de pupila derecha: ${posRightEye.x}, ${posRightEye.y}, ${posRightEye.z}`)
 
     ctx.beginPath();
     ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, (Math.abs(rightEye[0]._x - rightEye[3]._x))/2, 0, 2 * Math.PI);
     ctx.lineWidth = (Math.abs(rightEye[0]._x - rightEye[3]._x))*0.1;
     ctx.strokeStyle = 'red';
     ctx.stroke();
+    
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawCube(cube, canvas, posRightEye, null)
 
   
@@ -204,7 +207,7 @@ function drawCube(cube, canvas, cameraPos, windowPlane) {
 
   let centroid = getCentroid(cube)
 
-  console.log(centroid)
+  // console.log(centroid)
 
   let viewVector = [centroid.x - cameraPos.x, centroid.y - cameraPos.y, centroid.z - cameraPos.z]
   let faceNormals = []
@@ -217,7 +220,7 @@ function drawCube(cube, canvas, cameraPos, windowPlane) {
     let dot = dotProduct3D(faceNormals[i], viewVector)
     faceDots.push(dot)
   }
-  console.log(faceDots)
+  // console.log(faceDots)
   
   colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
   for (let i = 0; i < faces.length; i++) {
