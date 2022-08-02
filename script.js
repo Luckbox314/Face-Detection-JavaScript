@@ -141,14 +141,14 @@ function getEyePupilPosition(distance, altitude, azimuth) {
 }
 
 function drawCube(cube, canvas, cameraPos, windowPlane) {
-  face1 = [cube.vertex[0], cube.vertex[1], cube.vertex[2], cube.vertex[3]]
-  face2 = [cube.vertex[4], cube.vertex[5], cube.vertex[6], cube.vertex[7]]
+  face1 = [cube.vertex[0], cube.vertex[1], cube.vertex[3], cube.vertex[2]]
+  face2 = [cube.vertex[4], cube.vertex[5], cube.vertex[7], cube.vertex[6]]
   face3 = [cube.vertex[0], cube.vertex[1], cube.vertex[5], cube.vertex[4]]
   face4 = [cube.vertex[2], cube.vertex[3], cube.vertex[7], cube.vertex[6]]
-  face5 = [cube.vertex[1], cube.vertex[2], cube.vertex[6], cube.vertex[5]]
-  face6 = [cube.vertex[3], cube.vertex[0], cube.vertex[4], cube.vertex[7]]
+  face5 = [cube.vertex[1], cube.vertex[5], cube.vertex[7], cube.vertex[3]]
+  face6 = [cube.vertex[0], cube.vertex[4], cube.vertex[6], cube.vertex[2]]
   faces = [face1, face2, face3, face4, face5, face6]
-  faces = faces.sort((a) => - distanceToFace(a, cameraPos));
+  faces = faces.sort((a) =>  distanceToFace(a, cameraPos));
   colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
   for (let i = 0; i < faces.length; i++) {
     drawFace(faces[i], canvas, windowPlane, cameraPos, colors[i])
