@@ -41,11 +41,14 @@ let cube = {
   ]
 }
 scaleCube(cube, 15 )
-moveCube(cube, 0, 135, 150)
+moveCube(cube, 0, 135, 15)
 
 
 let leftBuff
 let rightBuff
+
+let oldRightEye = null
+let oldLeftEye = null
 
 video.addEventListener('play', () => {
   const canvas = document.getElementById('canvas')
@@ -90,8 +93,19 @@ video.addEventListener('play', () => {
     ctx.moveTo(0, cameraHeight/2);
     ctx.lineTo(cameraWidth, cameraHeight/2);
     ctx.stroke();
-    posRightEye = getEyePupilPosition(eyeDistance, rightAngle.y, rightAngle.x)
-    posLeftEye = getEyePupilPosition(eyeDistance, leftAngle.y, leftAngle.x)
+    newRightEye = getEyePupilPosition(eyeDistance, rightAngle.y, rightAngle.x)
+    newLeftEye = getEyePupilPosition(eyeDistance, leftAngle.y, leftAngle.x)
+    if (oldRightEye != null && oldLeftEye != null) {
+      posRightEye = {x: (newRightEye.x + oldRightEye.x)/2 , y: (newRightEye.y + oldRightEye.y)/2, z: (newRightEye.z + oldRightEye.z)/2}
+      posLeftEye = {x: (newLeftEye.x + oldLeftEye.x)/2 , y: (newLeftEye.y + oldLeftEye.y)/2, z: (newLeftEye.z + oldLeftEye.z)/2}
+      oldRightEye = newRightEye
+      oldLeftEye = newLeftEye
+    } else {
+      posRightEye = newRightEye
+      posLeftEye = newLeftEye
+      oldRightEye = newRightEye
+      oldLeftEye = newLeftEye
+    }
     // console.log(`Posición en espacio de pupila derecha: ${posRightEye.x}, ${posRightEye.y}, ${posRightEye.z}`)
 
     ctx.beginPath();
