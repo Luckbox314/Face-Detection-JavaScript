@@ -26,8 +26,8 @@ async function startVideo()  {
 }
 
 let interPupilDistance = 61; // mm
-let fov = 60;
-let dpi = 112;
+let fov = 133.01;
+let dpi = 91;
 let cube = {
   vertex : [
     {x: -1, y: -1, z: -1},
@@ -40,10 +40,12 @@ let cube = {
     {x: 1, y: 1, z: 1}
   ]
 }
-scaleCube(cube, 30 )
-moveCube(cube, 0, 135, 15)
+scaleCube(cube, 15 )
+moveCube(cube, 0, 135, 150)
 
 
+let leftBuff
+let rightBuff
 
 video.addEventListener('play', () => {
   const canvas = faceapi.createCanvasFromMedia(video)
@@ -57,9 +59,18 @@ video.addEventListener('play', () => {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     faceapi.draw.drawDetections(canvas, resizedDetections)
     // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-    
-    leftEye = resizedDetections[0].landmarks.getLeftEye()
-    rightEye = resizedDetections[0].landmarks.getRightEye()
+    try{
+      leftEye = resizedDetections[0].landmarks.getLeftEye()
+      rightEye = resizedDetections[0].landmarks.getRightEye()
+      leftBuff = leftEye
+      rightBuff = rightEye
+    } catch(e) {
+      if (e instanceof TypeError) {
+        console.log("No face detected")
+        leftEye = leftBuff
+        rightEye = rightBuff
+      }
+    }
     leftPupil = getPupilPixelPosition(leftEye)
     rightPupil = getPupilPixelPosition(rightEye)
     // console.log(`Posición de pupila derecha: ${rightPupil.x}, ${rightPupil.y}`)
@@ -164,6 +175,22 @@ function getFaceNormal(face) {
   return getUnitVector(V)
 }
 
+function getCentroid(cube){
+  let x = 0
+  let y = 0
+  let z = 0
+  for (let i = 0; i < cube.vertex.length; i++) {
+    x += cube.vertex[i].x
+    y += cube.vertex[i].y
+    z += cube.vertex[i].z
+  }
+  return {
+    x: x / cube.vertex.length,
+    y: y / cube.vertex.length,
+    z: z / cube.vertex.length
+  }
+}
+
 
 function drawCube(cube, canvas, cameraPos, windowPlane) {
   // obs: respetar la regla de la mano derecha al definir las caras
@@ -175,7 +202,11 @@ function drawCube(cube, canvas, cameraPos, windowPlane) {
   face6 = [cube.vertex[0], cube.vertex[4], cube.vertex[6], cube.vertex[2]]  
   faces = [face1, face2, face3, face4, face5, face6]
 
-  let viewVector = [cameraPos.x, cameraPos.y, -1 * cameraPos.z]
+  let centroid = getCentroid(cube)
+
+  console.log(centroid)
+
+  let viewVector = [centroid.x - cameraPos.x, centroid.y - cameraPos.y, centroid.z - cameraPos.z]
   let faceNormals = []
   for (let i = 0; i < faces.length; i++) {
     let normal = getFaceNormal(faces[i])
