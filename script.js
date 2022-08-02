@@ -27,6 +27,21 @@ async function startVideo()  {
 
 let interPupilDistance = 61; // mm
 let fov = 60;
+let dpi = 96;
+let cube = {
+  vertex : [
+    {x: -1, y: -1, z: -1},
+    {x: -1, y: -1, z: 1},
+    {x: -1, y: 1, z: -1},
+    {x: -1, y: 1, z: 1},
+    {x: 1, y: -1, z: -1},
+    {x: 1, y: -1, z: 1},
+    {x: 1, y: 1, z: -1},
+    {x: 1, y: 1, z: 1}
+  ]
+}
+scaleCube(cube, 10)
+moveCube(cube, 40, 20, -20)
 
 
 video.addEventListener('play', () => {
@@ -71,6 +86,7 @@ video.addEventListener('play', () => {
     ctx.arc((rightEye[0]._x + rightEye[3]._x)/2 , (rightEye[0]._y + rightEye[3]._y)/2, 5, 0, 2 * Math.PI);
     ctx.strokeStyle = 'red';
     ctx.stroke();
+    drawCube(cube, canvas, posRightEye, null)
 
   
     
@@ -97,6 +113,9 @@ function pixelPositionToAnglePosition(pixelPos) {
 function distance(pos1, pos2){
   return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2))
 }
+function distance3D(pos1, pos2){
+  return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2) + Math.pow(pos1.z - pos2.z, 2))
+}
 
 function angleToDistance(angle){
   return getTanFromDegrees((180 - angle)/2) * (interPupilDistance / 2)
@@ -117,4 +136,67 @@ function getEyePupilPosition(distance, altitude, azimuth) {
     y: y,
     z: z
   }
+}
+
+function drawCube(cube, canvas, cameraPos, windowPlane) {
+  face1 = [cube.vertex[0], cube.vertex[1], cube.vertex[2], cube.vertex[3]]
+  face2 = [cube.vertex[4], cube.vertex[5], cube.vertex[6], cube.vertex[7]]
+  face3 = [cube.vertex[0], cube.vertex[1], cube.vertex[5], cube.vertex[4]]
+  face4 = [cube.vertex[2], cube.vertex[3], cube.vertex[7], cube.vertex[6]]
+  face5 = [cube.vertex[1], cube.vertex[2], cube.vertex[6], cube.vertex[5]]
+  face6 = [cube.vertex[3], cube.vertex[0], cube.vertex[4], cube.vertex[7]]
+  faces = [face1, face2, face3, face4, face5, face6]
+  faces = faces.sort((a) => - distanceToFace(a, cameraPos));
+  colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple']
+  for (let i = 0; i < faces.length; i++) {
+    drawFace(faces[i], canvas, windowPlane, cameraPos, colors[i])
+  }
+
+  
+}
+
+function drawFace(face, canvas, windowPlane, cameraPos, color) {
+  let ctx = canvas.getContext("2d");
+  let faceVertices = face.map((vertex) => pointProjection(vertex, windowPlane, cameraPos));
+  
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  console.log(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937)
+  ctx.moveTo(faceVertices[0].x * dpi * 0.03937, faceVertices[0].y * dpi * 0.03937);
+  for (let i = 1; i < faceVertices.length; i++) {
+    ctx.lineTo(faceVertices[i].x * dpi * 0.03937, faceVertices[i].y * dpi * 0.03937);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function moveCube(cube, x, y, z) {
+  for (let i = 0; i < cube.vertex.length; i++) {
+    cube.vertex[i].x += x;
+    cube.vertex[i].y += y;
+    cube.vertex[i].z += z;
+  }
+}
+
+function scaleCube(cube, scale) {
+  for (let i = 0; i < cube.vertex.length; i++) {
+    cube.vertex[i].x *= scale;
+    cube.vertex[i].y *= scale;
+    cube.vertex[i].z *= scale;
+  }
+}
+
+function pointProjection(point, plane, cameraPos) {
+  lambda = point.z / (point.z - cameraPos.z)
+  x = (point.x - cameraPos.x * lambda) + point.x
+  y = (point.y - cameraPos.y * lambda) + point.y
+  return {x: x, y: y}
+}
+
+function distanceToFace(face, cameraPos) {
+  let distance = 0
+  for (let i = 0; i < face.length; i++) {
+    distance = Math.max(distance, distance3D(face[i], cameraPos));
+  }
+  return distance
 }
